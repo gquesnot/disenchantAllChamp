@@ -8,10 +8,12 @@ from time import sleep
 import psutil
 import urllib3
 
+from util.json_function import applyJsonConfig
 from util.session import Session
 
 
 class ClientApi:
+    defaultLeaguePath = ""
     dataFile = [
         "gameModes",
         "gameTypes",
@@ -27,7 +29,7 @@ class ClientApi:
 
     clientExecutablePath = "League of Legends\\LeagueClient.exe"
     clientPbeExecutablePath = "League of Legends (PBE)\\LeagueClient.exe"
-    defaultLeaguePath = "C:\\riot\\Riot Games"
+
     leagueGameconfigPath = "League of Legends\\Config\\game.cfg"
     leagueKeyconfigPath = "League of Legends\\Config\\input.ini"
     leaguePersistedSettingsPath = "League of Legends\\Config\\PersistedSettings.json"
@@ -58,12 +60,15 @@ class ClientApi:
     lootIdContextUrl = "/lol-loot/v1/player-loot/{}/context-menu"
     lootIdUrl = "/lol-loot/v1/player-loot/{}"
 
-    lockPath = os.path.join(defaultLeaguePath, "League of Legends\\lockfile")
-    pbelockPath = os.path.join(defaultLeaguePath, "League of Legends (PBE)\\lockfile")
+
 
     def __init__(self, mode="NORMAL"):
         print('-- CLIENT INIT START --')
+        applyJsonConfig(self, "config", directory=os.getcwd())
+        self.lockPath = os.path.join(self.defaultLeaguePath, "League of Legends\\lockfile")
+        self.pbelockPath = os.path.join(self.defaultLeaguePath, "League of Legends (PBE)\\lockfile")
         self.mode = mode
+
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.pid = self.clientOpened()
 
@@ -99,6 +104,7 @@ class ClientApi:
             lockPath = self.lockPath
         else:
             lockPath = self.pbelockPath
+
         if not os.path.isfile(lockPath):
             return False
         with open(lockPath, "r+") as fd:
