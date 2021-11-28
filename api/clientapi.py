@@ -60,8 +60,6 @@ class ClientApi:
     lootIdContextUrl = "/lol-loot/v1/player-loot/{}/context-menu"
     lootIdUrl = "/lol-loot/v1/player-loot/{}"
 
-
-
     def __init__(self, mode="NORMAL"):
         print('-- CLIENT INIT START --')
         applyJsonConfig(self, "config", directory=os.getcwd())
@@ -166,7 +164,11 @@ class ClientApi:
         if not len(resId):
             return False
         for champId, count in resId:
+            if "RENTAL" in champId:
+                url = "/lol-loot/v1/recipes/CHAMPION_RENTAL_disenchant/craft?repeat={}".format(count)
+            else:
+                url = "/lol-loot/v1/recipes/CHAMPION_disenchant/craft?repeat={}".format(count)
             self.session.request("post",
-                                 "/lol-loot/v1/recipes/CHAMPION_RENTAL_disenchant/craft?repeat={}".format(count),
+                                 url,
                                  [champId]).json()
         return True

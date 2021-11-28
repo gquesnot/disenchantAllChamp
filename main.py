@@ -11,6 +11,5 @@ from api.clientapi import ClientApi
 
 if __name__ == '__main__':
     cp = ClientApi()
-    while cp.disenchantAll():
-        pass
+    cp.disenchantAll()
 
