@@ -98,10 +98,7 @@ class ClientApi:
         sleep(0.1)
 
     def setLockFile(self):
-        if self.mode == "NORMAL":
-            lockPath = self.lockPath
-        else:
-            lockPath = self.pbelockPath
+        lockPath = self.lockPath if self.mode == "NORMAL" else self.pbelockPath
 
         if not os.path.isfile(lockPath):
             return False
@@ -124,7 +121,7 @@ class ClientApi:
                 return False
             # Login completed, now we can get data
             if r.json()['state'] == 'SUCCEEDED':
-                if r.json()['summonerId'] == None:
+                if r.json()['summonerId'] is None:
                     return False
                 self.summonerId = r.json()['summonerId']
                 return True
@@ -147,10 +144,8 @@ class ClientApi:
 
     def openClient(self):
         print('-- STARTING CLIENT --')
-        if self.mode == "normal":
-            subprocess.call([os.path.join(self.defaultLeaguePath, self.clientExecutablePath)])
-        else:
-            subprocess.call([os.path.join(self.defaultLeaguePath, self.clientPbeExecutablePath)])
+        subprocess.call([os.path.join(self.defaultLeaguePath, self.clientExecutablePath if self.mode == "NORMAL" else self.clientPbeExecutablePath)])
+
 
     def isAvailable(self):
         r = self.session.request('get', '/lol-gameflow/v1/availability')
@@ -164,11 +159,6 @@ class ClientApi:
         if not len(resId):
             return False
         for champId, count in resId:
-            if "RENTAL" in champId:
-                url = "/lol-loot/v1/recipes/CHAMPION_RENTAL_disenchant/craft?repeat={}".format(count)
-            else:
-                url = "/lol-loot/v1/recipes/CHAMPION_disenchant/craft?repeat={}".format(count)
-            self.session.request("post",
-                                 url,
-                                 [champId]).json()
+            url = f"/lol-loot/v1/recipes/CHAMPION_{'RENTAL_' if 'RENTAL' in champId else ''}disenchant/craft?repeat={count}"
+            self.session.request("post", url, [champId]).json()
         return True
