@@ -60,6 +60,7 @@ class ClientApi:
     getLootUrl = "/lol-loot/v1/player-loot"
     lootIdContextUrl = "/lol-loot/v1/player-loot/{}/context-menu"
     lootIdUrl = "/lol-loot/v1/player-loot/{}"
+    nbThread = 10
 
     def __init__(self, mode="NORMAL"):
         print('-- CLIENT INIT START --')
@@ -145,8 +146,8 @@ class ClientApi:
 
     def openClient(self):
         print('-- STARTING CLIENT --')
-        subprocess.call([os.path.join(self.defaultLeaguePath, self.clientExecutablePath if self.mode == "NORMAL" else self.clientPbeExecutablePath)])
-
+        subprocess.call([os.path.join(self.defaultLeaguePath,
+                                      self.clientExecutablePath if self.mode == "NORMAL" else self.clientPbeExecutablePath)])
 
     def isAvailable(self):
         r = self.session.request('get', '/lol-gameflow/v1/availability')
@@ -159,15 +160,15 @@ class ClientApi:
                  data['disenchantLootName'] == "CURRENCY_champion"]
         if not len(resId):
             return False
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=self.nbThread) as executor:
 
-            for champId , count in executor.map(self.disanchantAChamp,resId):
-                print(champId , count)
+            for champId, count in executor.map(self.disanchantAChamp, resId):
+                print(champId, count)
         return True
 
-    def disanchantAChamp(self, data):
-        champId = data[0]
-        count = data[1]
+    def disanchantAChamp(self, champInfo):
+        champId = champInfo[0]
+        count = champInfo[1]
 
         url = f"/lol-loot/v1/recipes/CHAMPION_{'RENTAL_' if 'RENTAL' in champId else ''}disenchant/craft?repeat={count}"
         self.session.request("post", url, [champId])
