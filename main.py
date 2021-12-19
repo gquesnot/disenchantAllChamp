@@ -12,4 +12,5 @@ from api.clientapi import ClientApi
 if __name__ == '__main__':
     cp = ClientApi()
     cp.disenchantAll()
+    input("Press Enter to Exit")
 
