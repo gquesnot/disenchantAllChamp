@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 from base64 import b64encode
+from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
 import psutil
@@ -158,7 +159,16 @@ class ClientApi:
                  data['disenchantLootName'] == "CURRENCY_champion"]
         if not len(resId):
             return False
-        for champId, count in resId:
-            url = f"/lol-loot/v1/recipes/CHAMPION_{'RENTAL_' if 'RENTAL' in champId else ''}disenchant/craft?repeat={count}"
-            self.session.request("post", url, [champId]).json()
+        with ThreadPoolExecutor(max_workers=10) as executor:
+
+            for champId , count in executor.map(self.disanchantAChamp,resId):
+                print(champId , count)
         return True
+
+    def disanchantAChamp(self, data):
+        champId = data[0]
+        count = data[1]
+
+        url = f"/lol-loot/v1/recipes/CHAMPION_{'RENTAL_' if 'RENTAL' in champId else ''}disenchant/craft?repeat={count}"
+        self.session.request("post", url, [champId])
+        return champId, count
